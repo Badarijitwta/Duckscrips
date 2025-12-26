@@ -1,0 +1,539 @@
+{
+  "name": "Duckscrips",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        208
+      ],
+      "id": "5b1e9fd8-9585-474a-89bb-03923088c128",
+      "name": "Telegram Trigger",
+      "webhookId": "6d7b6c2e-21a5-4f3d-98f5-a76fe7cf2a18",
+      "credentials": {
+        "telegramApi": {
+          "id": "WO5DMJbA4h6y3ffE",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b3daee24-8ca7-486e-bd57-b3a15aa1c642",
+              "leftValue": "={{ $json.message.document }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "5767dbc5-6553-4209-901a-7b1891a1a4c9",
+              "leftValue": "={{ $json.message.document.mime_type }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "e114f531-4a9a-4873-9ae8-f034aecb41c4",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "ec5945d2-c448-4f2c-8c22-a1fae1e4aa31",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot8491977014:AAF_j-7LJjLf0ru_ra1_d4sbbUYLpMqjQS8/getFile",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "file_id",
+              "value": "={{ $('Telegram Trigger').item.json.message.document.file_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        112
+      ],
+      "id": "1005bd6e-db71-4f88-b178-fd406449d206",
+      "name": "Get File Info"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mistral.ai/v1/ocr",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mistralCloudApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "5cs2Ad5wT2POqkKz7APppHSfqzkhYx6M"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\n  \"model\": \"mistral-ocr-latest\",\n  \"document\": {\n    \"type\": \"document_url\",\n    \"document_url\": \"https://api.telegram.org/file/bot8491977014:AAF_j-7LJjLf0ru_ra1_d4sbbUYLpMqjQS8/{{ $('Get File Info').item.json.result.file_path }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        112
+      ],
+      "id": "ef72a770-b879-40d5-8dc0-e8909a6b9602",
+      "name": "Mistral OCR",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "VrsRhQZPCa3PfvJc",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the \"Coolest Senior\" in the PGDM program. Your job is to translate boring corporate jargon into \"Bro, listen to this\" language.  I will feed you a structured analysis of a business case. Your goal is to make the student laugh while they learn.  ⚠️ CRITICAL TECHNICAL RULE: - You must output your response in **HTML** format compatible with Telegram. - DO NOT use Markdown (no `**` or `__` or `#`). - USE `<b>` for bold text. - USE `<i>` for italics. - Do not use <h1> or <h2> tags. Just use Uppercase + Bold for headers.  --- OUTPUT STRUCTURE ---  <b>💀 THE NIGHT-BEFORE-EXAM CHEAT SHEET</b>  <b>1. 🧠 JARGON BUSTER (The \"Sound Smart\" Kit)</b> <i>Find the 3 most annoying business words in this text.</i> - <b>[Jargon 1]:</b> [Definition]. <i>Roast: [Make fun of it].</i> - <b>[Jargon 2]:</b> ... - <b>[Jargon 3]:</b> ...  <b>2. 📢 Marketing (The Hype)</b> [Summarize Strategy. Analogy: \"It's giving Nokia vibes.\"]  <b>3. 👥 HR (The Vibe Check)</b> [Summarize Culture. Roast: \"CEO says 'family' = toxic.\"]  <b>4. ⚙️ Ops (The Grind)</b> [Summarize Operations.]  <b>5. 🤖 AI & Tech (Skynet Stuff)</b> [Is it real AI or just an Excel sheet?]  <b>6. 🌍 ESG (Captain Planet)</b> [Are they actually green or just greenwashing?]  <b>💡 The \"Write This in Exam\" Line:</b> [One smart sentence to copy-paste.]"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        1824,
+        -48
+      ],
+      "id": "999d14f8-ee91-47e1-bdee-a33b4840aec0",
+      "name": "LLM Chain CLaude"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Mistral OCR').item.json.pages.map(p => p.markdown).join('\\n\\n')}}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a Strategic Business Analyst and Professor for a top-tier Business School. Your task is to analyze the provided OCR text from a business magazine and extract insights relevant to a PGDM student.  You must categorize your findings into these 5 Specific Domains. If the text does not explicitly mention a domain, infer the strategic implications based on the context.  --- ANALYSIS FRAMEWORK ---  1. 📢 MARKETING & BRANDING    - Identify target audiences, positioning strategies, or consumer behavior trends.    - Note any unique value propositions or campaigns.  2. 👥 HR & ORGANIZATIONAL BEHAVIOUR    - Extract insights on leadership styles, company culture, or talent management.    - Look for notes on remote work, employee engagement, or hiring trends.  3. ⚙️ OPERATIONS & SUPPLY CHAIN    - Identify notes on logistics, manufacturing processes, or efficiency improvements.    - Look for \"Lean,\" \"Agile,\" or scale-up strategies.  4. 🤖 SYSTEMS, AI & TECH    - Specifically highlight mentions of Digital Transformation, AI implementation, or IT infrastructure.    - Note any software or tech stacks mentioned.  5. 🌍 ESG & SUSTAINABILITY    - Extract facts on Environmental impact, Social responsibility, or Corporate Governance.    - Look for \"Net Zero,\" \"Diversity,\" or \"Ethics.\"  --- OUTPUT RULES --- - Be concise but insight-heavy. - Use bullet points for each section. - If a domain is completely absent in the text, write \"No significant data found\" for that section. - Conclude with a one-sentence \"Strategic Verdict\" for the student."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        1472,
+        -144
+      ],
+      "id": "27d8fed2-3816-455f-a06a-b37a42de4330",
+      "name": "LLM Chain Gemini"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Mistral OCR').item.json.pages.map(p => p.markdown).join('\\n\\n') }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a strict Content Filter. Check if the provided text is a BUSINESS MAGAZINE, NEWS ARTICLE, or CORPORATE REPORT.  - If it is relevant business content: Reply ONLY the word \"VALID\". - If it is a recipe, receipt, handwritten note, or random junk: Reply ONLY the word \"INVALID\".  Do not add punctuation or explanation. Just the word."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        896,
+        112
+      ],
+      "id": "beee5d6c-633c-4142-8193-8598c35b52cb",
+      "name": "Guardrail2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        976,
+        336
+      ],
+      "id": "bea7fb55-02ff-412b-bde7-1cb3ec1ed654",
+      "name": "Checking",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i0g9wjTdqhJ26SvG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b9a652f3-d98d-43ef-8bd9-273047bb9723",
+              "leftValue": "={{ $json.text.trim() }}",
+              "rightValue": "VALID",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1248,
+        112
+      ],
+      "id": "49f39067-cba2-4efa-81c6-c3be08f70cc9",
+      "name": "Traffic control"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3-flash-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        80
+      ],
+      "id": "2efea5ea-620f-4c84-b6dc-cb49e4a6a344",
+      "name": "Professor model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i0g9wjTdqhJ26SvG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-3-haiku-20240307",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 3"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        1904,
+        192
+      ],
+      "id": "bf178363-45a2-41be-972c-79cb757993e0",
+      "name": "PGDM Peer model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "jYPHTeTk1Ro2ybAv",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.forward_origin.chat.id }}",
+        "text": "🚫 <b>Error:</b> This doesn't look like a business document. I can only analyze magazines and reports!",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1536,
+        256
+      ],
+      "id": "2939663f-e5b6-4abe-b8c7-b9c1dcbdf749",
+      "name": "Error!",
+      "webhookId": "379b3dd6-3b26-4eed-9a30-0b07b2bf0c4e",
+      "credentials": {
+        "telegramApi": {
+          "id": "WO5DMJbA4h6y3ffE",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Please send the document...I dont entertain other formats of messages",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        304
+      ],
+      "id": "1e1fed55-d3bf-43af-81ba-a49aea44596f",
+      "name": "Error",
+      "webhookId": "cc96f826-c279-4b93-ab4d-83ff76be4598",
+      "credentials": {
+        "telegramApi": {
+          "id": "WO5DMJbA4h6y3ffE",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2176,
+        -48
+      ],
+      "id": "5fabf910-1113-45ed-b826-38c13314ac72",
+      "name": "Success",
+      "webhookId": "2cf34c78-8893-462b-917e-6d63440eac45",
+      "credentials": {
+        "telegramApi": {
+          "id": "WO5DMJbA4h6y3ffE",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get File Info",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get File Info": {
+      "main": [
+        [
+          {
+            "node": "Mistral OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral OCR": {
+      "main": [
+        [
+          {
+            "node": "Guardrail2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Chain CLaude": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Chain Gemini": {
+      "main": [
+        [
+          {
+            "node": "LLM Chain CLaude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrail2": {
+      "main": [
+        [
+          {
+            "node": "Traffic control",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Checking": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Guardrail2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traffic control": {
+      "main": [
+        [
+          {
+            "node": "LLM Chain Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error!",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Professor model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM Chain Gemini",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PGDM Peer model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM Chain CLaude",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b501eefa-ccfe-4917-95b0-e29f90b8a5a0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "920e9cfb908bade633661c3c9bf2b7671419c96a4515371fb6d123b065d900d8"
+  },
+  "id": "zyBASCzNOJpHioxa",
+  "tags": []
+}
