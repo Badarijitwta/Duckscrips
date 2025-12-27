@@ -7,12 +7,6 @@
 ![Gemini](https://img.shields.io/badge/Analyst-Gemini_1.5-4285F4?style=for-the-badge&logo=google)
 ![Claude](https://img.shields.io/badge/Persona-Claude_3.5-d97757?style=for-the-badge&logo=anthropic)
 
-## 🎥 Live Demo
-**Watch the full automation in action (60s):**
-
-[![Watch the Demo](https://cdn.loom.com/sessions/thumbnails/955aeb6f2421431bac32a22fe024b7f3-with-play.gif)](https://www.loom.com/share/955aeb6f2421431bac32a22fe024b7f3)
-
----
 
 ## 🚀 The Problem
 PGDM students and business executives are flooded with dense PDF reports daily. Manually extracting domain-specific insights (Marketing, HR, Ops) from 50+ page magazines is inefficient and time-consuming.
